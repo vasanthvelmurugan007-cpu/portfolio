@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
+import Robot from './Robot';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate, useVelocity } from 'framer-motion';
 import { Github, Linkedin, Mail, ExternalLink, Heart, Globe, Recycle, Zap, Users, Code2, Terminal, Database, Layout, Cpu } from 'lucide-react';
 
 // --- Animated "Fireflies" Background ---
@@ -115,7 +116,7 @@ const ImpactCard = ({ icon: Icon, title, desc }) => (
   </motion.div>
 );
 
-const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal" }) => {
+const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal", link }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -150,7 +151,13 @@ const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal" }
           <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/5 ${textColor} border border-white/5`}>
             {tagline}
           </span>
-          <ExternalLink className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+          {link ? (
+            <a href={link} target="_blank" rel="noopener noreferrer" className="p-2 -mt-2 -mr-2 rounded-full hover:bg-white/10 transition-colors">
+              <ExternalLink className="w-6 h-6 text-gray-400 group-hover:text-white transition-colors" />
+            </a>
+          ) : (
+            <ExternalLink className="w-5 h-5 text-gray-600 group-hover:text-gray-400 transition-colors cursor-not-allowed" />
+          )}
         </div>
 
         <h3 className="text-3xl font-bold text-white mb-6 group-hover:translate-x-1 transition-transform">{title}</h3>
@@ -179,7 +186,90 @@ const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal" }
 };
 
 export default function App() {
-  const { scrollYProgress } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
+
+  // Section Tracking
+  const [activeSection, setActiveSection] = React.useState('mission');
+  const [robotMessage, setRobotMessage] = React.useState("Hi! I am Aura, Vasanth's AI Assistant. 👋");
+  const [robotState, setRobotState] = React.useState('default');
+
+  useEffect(() => {
+    const sections = ['mission', 'impact', 'work', 'contact'];
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            if (activeSection !== section) {
+              setActiveSection(section);
+              // Update Message & State based on section
+              switch (section) {
+                case 'mission':
+                  setRobotMessage("Hi! I am Aura, Vasanth's AI Assistant. 👋");
+                  setRobotState('default'); // Blue/Teal
+                  break;
+                case 'impact':
+                  setRobotMessage("Here's what drives my engineering. 🌱");
+                  setRobotState('eco'); // Green
+                  break;
+                case 'work':
+                  setRobotMessage("Check out these projects! Click for details. 🚀");
+                  setRobotState('work'); // Purple/Orange
+                  break;
+                case 'contact':
+                  setRobotMessage("Ready to build something amazing together? 📬");
+                  setRobotState('mail'); // Yellow/Gold
+                  break;
+              }
+            }
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeSection]);
+  // Auto-scroll to Name on Load
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    // Initial Greeting Delay
+    const timer = setTimeout(() => {
+      if (nameRef.current) {
+        nameRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 2500); // Wait 2.5s for the user to see the robot greeting first
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Robot Travel Transforms - Percentage based (Top/Left)
+  const robotScale = useTransform(scrollY, [0, 800], [0.75, 0.5]);
+  const robotX = useTransform(scrollY, [0, 800], ['80%', '90%']); // Right Col -> Corner
+  const robotY = useTransform(scrollY, [0, 800], ['50%', '90%']); // Center -> Bottom
+
+  // --- Feature 1: "Scared of Speed" ---
+  const scrollVelocity = useVelocity(scrollY);
+  const [isScrollingFast, setIsScrollingFast] = React.useState(false);
+
+  useEffect(() => {
+    return scrollVelocity.on("change", (latest) => {
+      // If velocity is > 800 (abitrary fast scroll), trigger scared mode
+      if (Math.abs(latest) > 800) {
+        setIsScrollingFast(true);
+        // Reset after a moment of no high velocity
+        clearTimeout(window.scrollTimer);
+        window.scrollTimer = setTimeout(() => setIsScrollingFast(false), 200);
+      }
+    });
+  }, [scrollVelocity]);
+
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -198,70 +288,77 @@ export default function App() {
 
       <Navbar />
 
-      <main className="container mx-auto max-w-6xl px-4">
+      <main className="container mx-auto max-w-6xl px-4 relative z-30">
 
         {/* HERO */}
-        <Section id="mission" className="items-center text-center pt-32">
+        <Section id="mission" className="pt-20 md:pt-0">
+          <div className="grid md:grid-cols-2 gap-8 items-center h-full">
 
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-teal-500/10 blur-[150px] rounded-full -z-10 animate-pulse" />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="mb-8 relative inline-block group"
-          >
-            <div className="absolute inset-0 bg-teal-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-full" />
-            <img
-              src="/profile.png"
-              alt="Vasanth Velmurugan"
-              className="w-48 h-48 rounded-full border-4 border-white/10 shadow-2xl object-cover relative z-10 group-hover:scale-105 transition-transform duration-500"
-            />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="max-w-4xl mx-auto"
-          >
+            {/* Left Col: Text & Mission */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300 text-sm font-semibold"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="text-left flex flex-col justify-center md:pt-16" // Added md:pt-16 to push down
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
-              </span>
-              Engineering for Social Good
+              {/* Mobile Aura (Static) */}
+              <div className="block md:hidden h-64 w-full -mb-8 pointer-events-auto">
+                <Robot message={robotMessage} state={robotState} isScrollingFast={isScrollingFast} />
+              </div>
+
+              {/* Badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300 text-xs font-semibold self-start"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                </span>
+                Engineering for Social Good
+              </motion.div>
+
+              <h1 ref={nameRef} className="text-5xl md:text-8xl font-bold tracking-tighter mb-4 text-white leading-none">
+                Vasanth<span className="text-teal-500">.</span>
+              </h1>
+
+              <h2 className="text-2xl md:text-4xl font-bold text-gray-400 mb-6 leading-tight">
+                I build technology that <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-purple-400">empowers communities.</span>
+              </h2>
+
+              <p className="text-lg text-gray-500 max-w-xl mb-8">
+                Full Stack Developer transforming complex social problems into elegant, accessible software solutions.
+              </p>
+
+              <div className="flex flex-wrap gap-4 mb-8">
+                <a href="#work" className="px-8 py-3 bg-teal-500 hover:bg-teal-400 text-black font-bold rounded-full transition-all hover:scale-105">
+                  Explore My Impact
+                </a>
+                <a href="#contact" className="px-8 py-3 border border-white/20 hover:bg-white/5 text-white font-semibold rounded-full transition-all">
+                  Get in Touch
+                </a>
+              </div>
+
+              {/* Compact Mission Statement */}
+              <div className="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
+                <h3 className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-2">/// The Mission</h3>
+                <p className="text-gray-300 font-light italic">
+                  "To democratize access to digital tools, ensuring that non-profits and small businesses have the same technological firepower as industry giants."
+                </p>
+              </div>
+
             </motion.div>
 
-            <h1 className="text-7xl md:text-9xl font-bold tracking-tighter mb-8 text-white">
-              Vasanth<span className="text-teal-500">.</span>
-            </h1>
+            {/* Right Col: Robot Area (Visual Only, Robot is Fixed) */}
+            <div className="hidden md:flex items-center justify-center h-full relative">
+              {/* Decorative Element to 'anchor' the robot visually */}
+              <div className="absolute w-[400px] h-[400px] bg-teal-500/10 blur-[120px] rounded-full animate-pulse" />
+            </div>
 
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-400 mb-10 max-w-3xl mx-auto leading-tight">
-              I build technology that <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-purple-400">empowers communities.</span>
-            </h2>
-
-            <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-12">
-              Full Stack Developer transforming complex social problems into elegant, accessible software solutions.
-            </p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <a href="#work" className="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-black font-bold rounded-full transition-all hover:scale-105">
-                Explore My Impact
-              </a>
-            </motion.div>
-          </motion.div>
+          </div>
         </Section>
 
         {/* IMPACT VALUES */}
@@ -382,6 +479,26 @@ export default function App() {
         </footer>
 
       </main>
+
+      {/* TRAVELING ROBOT COMPANION - Full Screen Overlay for precise control */}
+      <motion.div
+        className="fixed inset-0 z-20 pointer-events-none hidden md:block"
+      >
+        <motion.div
+          className="absolute w-64 h-80"
+          style={{
+            top: robotY,   // 20% -> 85%
+            left: robotX,  // 50% -> 85%
+            scale: robotScale, // 1.5 -> 0.6
+            x: "-50%",     // Center the div on the coordinate
+            y: "-50%"
+          }}
+        >
+          <div className="pointer-events-auto w-full h-full">
+            <Robot message={robotMessage} state={robotState} isScrollingFast={isScrollingFast} />
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
