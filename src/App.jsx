@@ -116,7 +116,7 @@ const ImpactCard = ({ icon: Icon, title, desc }) => (
   </motion.div>
 );
 
-const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal", link }) => {
+const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal", link, image }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -134,8 +134,21 @@ const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal", 
       className="group relative h-full border border-white/10 bg-gray-900/40 overflow-hidden rounded-3xl hover:border-white/20 transition-all duration-500"
       onMouseMove={handleMouseMove}
     >
+      {/* Background Image with Reveal Effect */}
+      {image && (
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gray-900/90 group-hover:bg-gray-900/75 transition-colors duration-500 z-10" />
+          <motion.img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-40 group-hover:opacity-60 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent z-10" />
+        </div>
+      )}
+
       <motion.div
-        className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100 z-20"
         style={{
           background: useMotionTemplate`
             radial-gradient(
@@ -146,9 +159,9 @@ const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal", 
           `,
         }}
       />
-      <div className="p-8 md:p-10 flex flex-col h-full relative z-10">
+      <div className="p-8 md:p-10 flex flex-col h-full relative z-20">
         <div className="flex justify-between items-start mb-6">
-          <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/5 ${textColor} border border-white/5`}>
+          <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/5 ${textColor} border border-white/5 backdrop-blur-md`}>
             {tagline}
           </span>
           {link ? (
@@ -160,22 +173,22 @@ const ProjectCard = ({ title, tagline, problem, solution, tags, color = "teal", 
           )}
         </div>
 
-        <h3 className="text-3xl font-bold text-white mb-6 group-hover:translate-x-1 transition-transform">{title}</h3>
+        <h3 className="text-3xl font-bold text-white mb-6 group-hover:translate-x-1 transition-transform drop-shadow-lg">{title}</h3>
 
         <div className="space-y-4 mb-8 flex-grow">
           <div>
-            <span className="text-xs uppercase text-gray-500 font-bold tracking-wider">Problem</span>
-            <p className="text-gray-300 mt-1">{problem}</p>
+            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Problem</span>
+            <p className="text-gray-300 mt-1 text-sm md:text-base leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{problem}</p>
           </div>
           <div>
-            <span className="text-xs uppercase text-gray-500 font-bold tracking-wider">Solution</span>
-            <p className="text-gray-300 mt-1">{solution}</p>
+            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Solution</span>
+            <p className="text-gray-300 mt-1 text-sm md:text-base leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{solution}</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-6 border-t border-white/5">
+        <div className="flex flex-wrap gap-2 pt-6 border-t border-white/10">
           {tags.map(tag => (
-            <span key={tag} className="text-xs font-medium px-3 py-1 text-gray-400">
+            <span key={tag} className="text-xs font-medium px-3 py-1 text-gray-300 bg-black/20 rounded-full border border-white/5">
               #{tag}
             </span>
           ))}
@@ -468,6 +481,7 @@ export default function App() {
               solution="A centralized social impact platform connecting volunteers with certified NGOs, featuring real-time impact tracking and event management."
               tags={['React', 'Tailwind', 'Social Impact']}
               link="http://localhost:5174"
+              image="/projects/unityhub.png"
             />
 
             <ProjectCard
@@ -477,6 +491,7 @@ export default function App() {
               problem="Consumers waste money and carbon emissions on inefficient shipping and lack of recycling options."
               solution="An aggregator prioritizing 'Delivery Speed' to optimize logistics, featuring 'Smart Swap'—a P2P barter system that keeps products out of landfills."
               tags={['Next.js', 'Python Scrapy', 'Green Tech']}
+              image="/projects/smartcompare.png"
             />
 
             <ProjectCard
@@ -486,6 +501,7 @@ export default function App() {
               problem="Local NGOs struggle to showcase their work and attract digital-first donors, limiting their social reach."
               solution="A high-performance, accessible web platform with dynamic galleries ('Pillars of Hope') that increased engagement and event visibility."
               tags={['FastAPI', 'React', 'Social Impact']}
+              image="/projects/aakritii.png"
             />
 
             <ProjectCard
@@ -495,6 +511,7 @@ export default function App() {
               problem="Small businesses lose hours manually tracking inventory and struggling with complex GSTR-1 tax compliance."
               solution="A comprehensive billing & stock system with automated deductions and one-click tax exports, saving 10+ hours/week for owners."
               tags={['MERN Stack', 'Automation', 'FinTech']}
+              image="/projects/businessos.png"
             />
 
             <ProjectCard
@@ -504,6 +521,7 @@ export default function App() {
               problem="Documentation of social work often gets lost in disordered file systems."
               solution="An interactive, lag-free image archive handling bulk uploads to preserve memories of community service seamlessly."
               tags={['Optimization', 'UX Design', 'Cloudinary']}
+              image="/projects/hopegallery.png"
             />
           </div>
         </Section>
