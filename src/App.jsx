@@ -555,8 +555,8 @@ export default function App() {
             y: "-50%"
           }}
         >
-          {/* Dock Effect (Glassmorphism Glow) */}
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-md rounded-full border border-teal-500/20 shadow-2xl -z-10" />
+          {/* Dock Effect (Glassmorphism Glow) - HIDDEN ON MOBILE */}
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-md rounded-full border border-teal-500/20 shadow-2xl -z-10 hidden md:block" />
 
           <div className="relative z-10 pointer-events-auto w-full h-full scale-[0.8] origin-center"> {/* Internal Scaling tweak to fit dock */}
             <Robot message={robotMessage} state={robotState} isScrollingFast={isScrollingFast} />
