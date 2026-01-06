@@ -546,7 +546,7 @@ export default function App() {
 
       {/* TRAVELING ROBOT COMPANION - Full Screen Overlay for precise control */}
       <motion.div
-        className={`fixed inset-0 z-20 pointer-events-none hidden md:block ${showIntro ? 'opacity-0' : 'opacity-100 transition-opacity duration-1000'}`}
+        className={`fixed inset-0 z-20 pointer-events-none ${showIntro ? 'opacity-0' : 'opacity-100 transition-opacity duration-1000'}`}
       >
         <motion.div
           className="absolute w-64 h-80"
