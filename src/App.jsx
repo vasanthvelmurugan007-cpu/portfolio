@@ -365,10 +365,7 @@ export default function App() {
               transition={{ duration: 1, ease: "easeOut" }}
               className="text-left flex flex-col justify-center md:pt-16" // Added md:pt-16 to push down
             >
-              {/* Mobile Aura (Static) */}
-              <div className="block md:hidden h-64 w-full -mb-8 pointer-events-auto">
-                <Robot message={robotMessage} state={robotState} isScrollingFast={isScrollingFast} />
-              </div>
+
 
               {/* Badge */}
               <motion.div
