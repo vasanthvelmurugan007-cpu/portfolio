@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import Robot from './Robot';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate, useVelocity } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate, useVelocity, AnimatePresence } from 'framer-motion';
 import { Github, Linkedin, Mail, ExternalLink, Heart, Globe, Recycle, Zap, Users, Code2, Terminal, Database, Layout, Cpu } from 'lucide-react';
 
 // --- Animated "Fireflies" Background ---
@@ -276,8 +276,72 @@ export default function App() {
     restDelta: 0.001
   });
 
+  // --- Intro Sequence ---
+  // --- Intro Sequence ---
+  const [showIntro, setShowIntro] = React.useState(true);
+  const [introMessage, setIntroMessage] = React.useState("");
+  const [isLaunching, setIsLaunching] = React.useState(false);
+
+  useEffect(() => {
+    // Lock scroll during intro
+    if (showIntro) {
+      document.body.style.overflow = 'hidden';
+      window.scrollTo(0, 0); // Ensure we are at top
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cinematic Sequence
+    const sequence = async () => {
+      // 0.0s - Start (Blank Black Screen)
+
+      // 0.5s - Robot Flies In
+      setIsLaunching(true);
+      await new Promise(r => setTimeout(r, 600)); // Fly duration
+      setIsLaunching(false);
+
+      // 1.2s - First Message
+      setIntroMessage("Hello! 👋");
+      await new Promise(r => setTimeout(r, 2000));
+
+      // 3.2s - Second Message
+      setIntroMessage("Initializing Mission Control...");
+      await new Promise(r => setTimeout(r, 1500));
+
+      // 4.7s - End
+      setShowIntro(false);
+    };
+
+    sequence();
+  }, [showIntro]);
+
   return (
     <div className="min-h-screen text-white selection:bg-teal-500/30 selection:text-white font-sans overflow-x-hidden">
+
+      {/* --- INTRO OVERLAY --- */}
+      <AnimatePresence>
+        {showIntro && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ y: 400, scale: 0.5, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{
+                y: { type: "spring", stiffness: 60, damping: 15 },
+                scale: { duration: 0.8, ease: "backOut" },
+                opacity: { duration: 0.5 }
+              }}
+            >
+              <Robot message={introMessage} state="default" isLaunching={isLaunching} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <ParticleBackground />
 
       {/* Scroll Progress */}
@@ -482,7 +546,7 @@ export default function App() {
 
       {/* TRAVELING ROBOT COMPANION - Full Screen Overlay for precise control */}
       <motion.div
-        className="fixed inset-0 z-20 pointer-events-none hidden md:block"
+        className={`fixed inset-0 z-20 pointer-events-none hidden md:block ${showIntro ? 'opacity-0' : 'opacity-100 transition-opacity duration-1000'}`}
       >
         <motion.div
           className="absolute w-64 h-80"

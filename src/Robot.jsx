@@ -1,9 +1,9 @@
 // import { replace } from 'react-router-dom';
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useSpring, useTransform, useMotionValue, useAnimation, useVelocity } from 'framer-motion';
+import { motion, useSpring, useTransform, useMotionValue, useAnimation, useVelocity, AnimatePresence } from 'framer-motion';
 import { Heart } from 'lucide-react';
 
-const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
+const Robot = ({ message, state = 'default', isScrollingFast = false, isLaunching = false }) => {
     // Mouse tracking
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
@@ -133,9 +133,12 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
         };
     }, []);
 
+    // --- Interaction States ---
+    const [blastActive, setBlastActive] = useState(false);
+
     const handleClick = () => {
         // Randomize Interaction
-        const interactions = ['jump', 'love', 'spin'];
+        const interactions = ['jump', 'love', 'spin', 'blast'];
         const action = interactions[Math.floor(Math.random() * interactions.length)];
 
         if (action === 'love') {
@@ -147,12 +150,21 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
             });
             setTimeout(() => setClickMode('normal'), 2000);
         } else if (action === 'spin') {
-            setClickMode('confused'); // just for visual change if needed
+            setClickMode('confused');
             controls.start({
                 rotateY: [0, 360],
                 transition: { duration: 0.8, ease: "backInOut" }
             });
             setTimeout(() => setClickMode('normal'), 1000);
+        } else if (action === 'blast') {
+            // Repulsor Blast Logic
+            setBlastActive(true);
+            controls.start({
+                x: [-5, 5, -5, 0],
+                rotateZ: [0, -5, 5, 0],
+                transition: { duration: 0.4 }
+            });
+            setTimeout(() => setBlastActive(false), 1000);
         } else {
             // Jump
             controls.start({
@@ -254,13 +266,39 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
                         }}
                         className="relative w-36 h-32 z-20 transform-style-3d"
                     >
-                        {/* Helmet (Existing) */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-black rounded-[2.5rem] shadow-xl border border-slate-700 overflow-hidden ring-1 ring-teal-500/20">
+                        {/* Helmet (Midnight Cherry & Carbon Armor) */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-slate-900 to-black rounded-[2.5rem] shadow-xl border border-red-900/50 overflow-hidden ring-1 ring-white/10">
                             <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
 
-                            {/* FACE SCREEN */}
+                            {/* FACE SCREEN (HUD Version) */}
                             <div className="absolute top-4 left-3 right-3 bottom-8 bg-black rounded-[2rem] border border-gray-800 shadow-[inset_0_0_20px_black] flex items-center justify-center overflow-hidden">
-                                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, #2dd4bf 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
+                                {/* Technical Grid Overlay */}
+                                <div className="absolute inset-0 opacity-20"
+                                    style={{
+                                        backgroundImage: 'linear-gradient(rgba(45, 212, 191, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(45, 212, 191, 0.3) 1px, transparent 1px)',
+                                        backgroundSize: '20px 20px'
+                                    }}
+                                />
+
+                                {/* Scrolling Data Stream */}
+                                <motion.div
+                                    animate={{ y: [0, -100] }}
+                                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                    className="absolute inset-0 opacity-10 flex flex-col gap-1 text-[8px] font-mono text-teal-500 leading-none overflow-hidden"
+                                >
+                                    {Array.from({ length: 20 }).map((_, i) => (
+                                        <div key={i} className="whitespace-nowrap">
+                                            {Math.random().toString(36).substring(7)} 010101 AF-90 {Math.random().toString(36).substring(7)}
+                                        </div>
+                                    ))}
+                                </motion.div>
+
+                                {/* Holographic Scanline */}
+                                <motion.div
+                                    animate={{ top: ['-100%', '200%'] }}
+                                    transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                                    className="absolute left-0 right-0 h-20 bg-gradient-to-b from-transparent via-teal-500/10 to-transparent pointer-events-none z-0"
+                                />
 
                                 {/* EYES */}
                                 <div className="flex gap-4 z-10 transition-all duration-300">
@@ -306,26 +344,45 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
                                 </div>
                             </div>
 
-                            {/* Voice/Mouth Visualizer */}
-                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
-                                {[1, 2, 3, 4].map(i => (
-                                    <motion.div
-                                        key={i}
-                                        style={{ backgroundColor: colors.secondary }}
-                                        animate={{ height: [2, 6, 2], opacity: [0.3, 1, 0.3] }}
-                                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
-                                        className="w-1 rounded-full transition-colors duration-500"
-                                    />
-                                ))}
+                            {/* JARVIS Voice Visualizer */}
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-8 flex items-center justify-center">
+                                {/* Outer Ring */}
+                                <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                    className="absolute inset-0 border border-teal-500/30 rounded-full border-t-transparent border-l-transparent"
+                                />
+                                {/* Inner Ring */}
+                                <motion.div
+                                    animate={{ rotate: -360 }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                    className="absolute inset-1 border border-teal-400/50 rounded-full border-b-transparent border-r-transparent"
+                                />
+                                {/* Core Dot */}
+                                <motion.div
+                                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                                    transition={{ duration: 1, repeat: Infinity }}
+                                    className="w-1.5 h-1.5 bg-teal-200 rounded-full shadow-[0_0_10px_currentColor]"
+                                />
                             </div>
                         </div>
 
                         {/* Side Ears/Antennae */}
                         <div className="absolute top-10 -left-4 w-6 h-12 bg-slate-800 rounded-l-xl border-l border-slate-600 shadow-lg -z-10 flex items-center justify-center">
-                            <div className="w-1.5 h-6 bg-teal-500/30 rounded-full blur-[1px]" />
+                            <motion.div
+                                animate={{ opacity: [0.3, 0.8, 0.3] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                style={{ backgroundColor: colors.primary }}
+                                className="w-1.5 h-6 rounded-full blur-[2px]"
+                            />
                         </div>
                         <div className="absolute top-10 -right-4 w-6 h-12 bg-slate-800 rounded-r-xl border-r border-slate-600 shadow-lg -z-10 flex items-center justify-center">
-                            <div className="w-1.5 h-6 bg-teal-500/30 rounded-full blur-[1px]" />
+                            <motion.div
+                                animate={{ opacity: [0.3, 0.8, 0.3] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                style={{ backgroundColor: colors.primary }}
+                                className="w-1.5 h-6 rounded-full blur-[2px]"
+                            />
                         </div>
 
                         {/* Top Hologram Projector */}
@@ -335,26 +392,34 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
 
                     {/* --- BODY --- */}
                     <div className="relative -mt-5 z-10 w-24 h-28 transform-style-3d">
-                        {/* Torso */}
-                        <div className="w-full h-full bg-gradient-to-br from-slate-800 to-black rounded-[2rem] border border-slate-700 shadow-2xl flex flex-col items-center pt-8 overflow-hidden relative">
-                            {/* Central Reactor Core */}
-                            <div className="w-12 h-12 rounded-full border-[3px] border-slate-700 bg-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.05)] relative z-10">
+                        {/* Torso (Midnight Cherry) */}
+                        <div className="w-full h-full bg-gradient-to-br from-red-950 via-slate-900 to-black rounded-[2rem] border border-red-900/40 shadow-2xl flex flex-col items-center pt-8 overflow-hidden relative">
+
+                            {/* Central Reactor Core (ARC Triangle) */}
+                            <div
+                                className="w-16 h-14 bg-black flex items-center justify-center relative z-10 transition-shadow duration-500"
+                                style={{
+                                    clipPath: "polygon(50% 100%, 100% 0, 0 0)", // Inverted Triangle
+                                    filter: `drop-shadow(0 0 10px ${colors.primary}60)`
+                                }}
+                            >
+                                {/* Inner Triangle Glow */}
                                 <motion.div
-                                    style={{ background: `linear-gradient(45deg, ${colors.primary}, ${colors.secondary})` }}
+                                    style={{ background: `linear-gradient(180deg, ${colors.primary}, ${colors.secondary})` }}
                                     animate={{
-                                        scale: isHovering ? [1, 1.2, 1] : [1, 1.1, 1],
                                         opacity: [0.8, 1, 0.8],
-                                        boxShadow: isHovering ? `0 0 40px ${colors.shadow}` : `0 0 20px ${colors.shadow}`,
-                                        rotate: isHovering ? 360 : 0
                                     }}
                                     transition={{
-                                        duration: isHovering ? 0.5 : 2,
+                                        duration: 2,
                                         repeat: Infinity,
-                                        ease: isHovering ? "linear" : "easeInOut"
+                                        ease: "easeInOut"
                                     }}
-                                    className="w-6 h-6 rounded-full transition-all duration-500"
+                                    className="w-full h-full opacity-80"
                                 />
+                                {/* Detail Lines */}
+                                <div className="absolute inset-0 border-t-[3px] border-white/20" />
                             </div>
+
 
                             {/* Body Details */}
                             <div className="w-full h-[1px] bg-slate-700 mt-6" />
@@ -365,24 +430,145 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
                         </div>
 
                         {/* Floating Arms */}
+                        {/* Right Arm (Visual Left) - The Waving / BLAST Arm */}
                         <motion.div
                             style={{ rotateX: headRotateX }}
-                            className="absolute top-8 -left-8 w-6 h-16 bg-gradient-to-b from-slate-700 to-slate-800 rounded-2xl border border-slate-600 shadow-xl"
-                        />
+                            animate={
+                                blastActive
+                                    ? { rotate: -90, x: -10, y: -5 } // Raise Arm to Blast
+                                    : message?.includes("Hello") || message?.includes("Hi")
+                                        ? {
+                                            rotate: [0, -20, 10, -20, 0],
+                                            y: [0, -5, 0],
+                                            x: [0, -5, 0]
+                                        }
+                                        : state === 'work'
+                                            ? {
+                                                y: [0, 3, 0],
+                                                x: [0, 2, 0],
+                                                rotate: [0, 5, 0]
+                                            }
+                                            : { y: [0, 2, 0] }
+                            }
+                            transition={
+                                blastActive
+                                    ? { duration: 0.2 }
+                                    : message?.includes("Hello") || message?.includes("Hi")
+                                        ? { duration: 1.5, repeat: Infinity, repeatDelay: 0.5 }
+                                        : { duration: 0.2, repeat: Infinity, repeatType: "reverse" }
+                            }
+                            className={`absolute top-8 -left-9 w-6 h-16 bg-gradient-to-b from-slate-800 to-red-950 rounded-2xl border border-red-900/30 shadow-xl origin-top-right ${blastActive ? 'z-50' : ''}`}
+                        >
+                            {/* Repulsor Emitter Glow */}
+                            {blastActive && (
+                                <motion.div
+                                    animate={{ scale: [1, 2], opacity: [1, 0] }}
+                                    transition={{ duration: 0.4 }}
+                                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 bg-sky-400 blur-lg rounded-full"
+                                />
+                            )}
+                        </motion.div>
+
+                        {/* BLAST BEAM and SHOCKWAVE (Independent of Arm Helper) */}
+                        <AnimatePresence>
+                            {blastActive && (
+                                <motion.div
+                                    initial={{ opacity: 1, scale: 0.2, x: -40, y: 50 }}
+                                    animate={{ opacity: 0, scale: 4, x: -150 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.6, ease: "easeOut" }}
+                                    className="absolute top-0 left-0 w-32 h-32 bg-cyan-400 rounded-full blur-2xl z-50 pointer-events-none mix-blend-screen"
+                                />
+                            )}
+                        </AnimatePresence>
+
+                        {/* Left Arm (Visual Right) */}
                         <motion.div
                             style={{ rotateX: headRotateX }}
-                            className="absolute top-8 -right-8 w-6 h-16 bg-gradient-to-b from-slate-700 to-slate-800 rounded-2xl border border-slate-600 shadow-xl"
+                            animate={
+                                state === 'work'
+                                    ? {
+                                        y: [0, 3, 0],
+                                        x: [0, -2, 0],
+                                        rotate: [0, -5, 0]
+                                    }
+                                    : { y: [0, 2, 0] }
+                            }
+                            transition={
+                                state === 'work'
+                                    ? { duration: 0.25, repeat: Infinity, repeatType: "reverse", delay: 0.1 }
+                                    : { duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
+                            }
+                            className="absolute top-8 -right-9 w-6 h-16 bg-gradient-to-b from-slate-800 to-red-950 rounded-2xl border border-red-900/30 shadow-xl origin-top-left"
                         />
+
+                        {/* Holographic Keyboard (Only in Work Mode) */}
+                        <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{
+                                scale: state === 'work' ? 1 : 0,
+                                opacity: state === 'work' ? 1 : 0
+                            }}
+                            className="absolute top-16 left-1/2 -translate-x-1/2 w-40 h-24 pointer-events-none"
+                            style={{ perspective: "500px" }}
+                        >
+                            <motion.div
+                                animate={{ rotateX: 60, rotateZ: 0, opacity: [0.3, 0.6, 0.3] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="w-full h-full bg-gradient-to-b from-purple-500/10 to-transparent border border-purple-500/20 rounded-xl grid grid-cols-6 gap-0.5 p-1 backdrop-blur-sm"
+                            >
+                                {Array.from({ length: 18 }).map((_, i) => (
+                                    <motion.div
+                                        key={i}
+                                        animate={{ opacity: [0.1, 0.5, 0.1] }}
+                                        transition={{ duration: Math.random() * 0.5 + 0.2, repeat: Infinity, delay: Math.random() }}
+                                        className="bg-purple-400/30 rounded-sm"
+                                    />
+                                ))}
+                            </motion.div>
+                        </motion.div>
                     </div>
 
                     {/* --- THRUSTER / SHADOW --- */}
-                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
-                        {/* Blue Thruster Glow */}
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 pointer-events-none flex justify-center">
+                        {/* Blue/Orange Thruster Glow */}
                         <motion.div
-                            animate={{ height: [10, 20, 10], opacity: [0.5, 0.8, 0.5] }}
-                            transition={{ duration: 0.2, repeat: Infinity }}
-                            className="w-8 bg-blue-500/40 blur-xl rounded-full"
+                            animate={{
+                                height: isLaunching ? [40, 60, 45] : [15, 25, 15],
+                                opacity: isLaunching ? [0.8, 1, 0.8] : [0.5, 0.8, 0.5],
+                                width: isLaunching ? 20 : 8,
+                                background: isLaunching
+                                    ? "linear-gradient(to bottom, #f97316, #ef4444)" // Orange to Red
+                                    : "#3b82f6" // Blue
+                            }}
+                            transition={{ duration: 0.1, repeat: Infinity }}
+                            className={`absolute blur-xl rounded-full ${!isLaunching && 'bg-blue-500/40'}`}
                         />
+                        {/* Inner Core Heat */}
+                        <motion.div
+                            animate={{
+                                height: isLaunching ? [30, 50, 35] : [10, 20, 10],
+                                opacity: [0.8, 1, 0.8],
+                                width: isLaunching ? 12 : 4,
+                            }}
+                            transition={{ duration: 0.05, repeat: Infinity }}
+                            className="bg-white/90 blur-md rounded-full relative z-10"
+                        />
+                        {/* Shockwave Rings (Launch Only) */}
+                        {isLaunching && (
+                            <>
+                                <motion.div
+                                    animate={{ scale: [0.5, 2], opacity: [0.8, 0], y: [0, 40] }}
+                                    transition={{ duration: 0.4, repeat: Infinity, ease: "easeOut" }}
+                                    className="absolute top-0 w-16 h-4 bg-orange-500/30 rounded-[100%] blur-sm border border-orange-400/50"
+                                />
+                                <motion.div
+                                    animate={{ scale: [0.5, 2], opacity: [0.8, 0], y: [0, 50] }}
+                                    transition={{ duration: 0.4, repeat: Infinity, delay: 0.2, ease: "easeOut" }}
+                                    className="absolute top-0 w-12 h-3 bg-white/40 rounded-[100%] blur-md"
+                                />
+                            </>
+                        )}
                     </div>
 
                 </motion.div>
@@ -395,7 +581,7 @@ const Robot = ({ message, state = 'default', isScrollingFast = false }) => {
                 />
 
             </motion.div>
-        </div>
+        </div >
     );
 };
 
