@@ -198,7 +198,7 @@ const Robot = ({ message, state = 'default', isScrollingFast = false, isLaunchin
                 animate={{
                     opacity: (showBubble && !isSleeping && !isDizzy) ? 1 : 0,
                     scale: (showBubble && !isSleeping && !isDizzy) ? 1 : 0.8,
-                    y: (showBubble && !isSleeping && !isDizzy) ? -160 : 10,
+                    y: (showBubble && !isSleeping && !isDizzy) ? -120 : 10,
                     rotate: (showBubble && !isSleeping && !isDizzy) ? 0 : -5
                 }}
                 className="absolute z-50 max-w-[200px]"
