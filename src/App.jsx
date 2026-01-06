@@ -250,9 +250,9 @@ export default function App() {
   }, []);
 
   // Robot Travel Transforms - Percentage based (Top/Left)
-  const robotScale = useTransform(scrollY, [0, 800], [0.75, 0.5]);
-  const robotX = useTransform(scrollY, [0, 800], ['80%', '90%']); // Right Col -> Corner
-  const robotY = useTransform(scrollY, [0, 800], ['50%', '90%']); // Center -> Bottom
+  const robotScale = useTransform(scrollY, [0, 800], [0.8, 0.4]); // Smaller on scroll (0.4)
+  const robotX = useTransform(scrollY, [0, 800], ['80%', '88%']); // Tucked in corner
+  const robotY = useTransform(scrollY, [0, 800], ['75%', '86%']); // Start lower (75%) to avoid text overlap
 
   // --- Feature 1: "Scared of Speed" ---
   const scrollVelocity = useVelocity(scrollY);
@@ -546,16 +546,19 @@ export default function App() {
         className={`fixed inset-0 z-20 pointer-events-none ${showIntro ? 'opacity-0' : 'opacity-100 transition-opacity duration-1000'}`}
       >
         <motion.div
-          className="absolute w-64 h-80"
+          className="absolute w-64 h-80 flex items-center justify-center"
           style={{
-            top: robotY,   // 20% -> 85%
-            left: robotX,  // 50% -> 85%
-            scale: robotScale, // 1.5 -> 0.6
-            x: "-50%",     // Center the div on the coordinate
+            top: robotY,
+            left: robotX,
+            scale: robotScale,
+            x: "-50%",
             y: "-50%"
           }}
         >
-          <div className="pointer-events-auto w-full h-full">
+          {/* Dock Effect (Glassmorphism Glow) */}
+          <div className="absolute inset-4 bg-teal-500/5 backdrop-blur-[2px] rounded-full border border-teal-500/10 shadow-2xl -z-10 animate-pulse" />
+
+          <div className="pointer-events-auto w-full h-full scale-[0.8] origin-center"> {/* Internal Scaling tweak to fit dock */}
             <Robot message={robotMessage} state={robotState} isScrollingFast={isScrollingFast} />
           </div>
         </motion.div>
