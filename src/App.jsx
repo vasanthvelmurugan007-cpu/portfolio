@@ -556,9 +556,9 @@ export default function App() {
           }}
         >
           {/* Dock Effect (Glassmorphism Glow) */}
-          <div className="absolute inset-4 bg-teal-500/5 backdrop-blur-[2px] rounded-full border border-teal-500/10 shadow-2xl -z-10 animate-pulse" />
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-md rounded-full border border-teal-500/20 shadow-2xl -z-10" />
 
-          <div className="pointer-events-auto w-full h-full scale-[0.8] origin-center"> {/* Internal Scaling tweak to fit dock */}
+          <div className="relative z-10 pointer-events-auto w-full h-full scale-[0.8] origin-center"> {/* Internal Scaling tweak to fit dock */}
             <Robot message={robotMessage} state={robotState} isScrollingFast={isScrollingFast} />
           </div>
         </motion.div>
