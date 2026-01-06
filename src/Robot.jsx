@@ -179,7 +179,7 @@ const Robot = ({ message, state = 'default', isScrollingFast = false, isLaunchin
     useEffect(() => {
         if (message) {
             setShowBubble(true);
-            const timer = setTimeout(() => setShowBubble(false), 5000);
+            const timer = setTimeout(() => setShowBubble(false), 10000);
             return () => clearTimeout(timer);
         }
     }, [message]);
